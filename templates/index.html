@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SCDF Fire Investigation Report Generator</title>
+<style>
+  :root {
+    --brand: #b3261e;
+    --brand-dark: #8c1d17;
+    --ink: #1c1c1c;
+    --muted: #6b6b6b;
+    --border: #d9d9d9;
+    --bg: #f5f5f3;
+    --card: #ffffff;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    padding-bottom: 60px;
+  }
+  header {
+    background: var(--brand);
+    color: #fff;
+    padding: 28px 20px;
+    text-align: center;
+  }
+  header h1 {
+    margin: 0 0 4px;
+    font-size: 1.5rem;
+  }
+  header p {
+    margin: 0;
+    opacity: 0.9;
+    font-size: 0.95rem;
+  }
+  main {
+    max-width: 840px;
+    margin: 24px auto;
+    padding: 0 16px;
+  }
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+  fieldset {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+  }
+  legend {
+    font-weight: 600;
+    font-size: 1.05rem;
+    padding: 0 8px;
+    color: var(--brand-dark);
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .full { grid-column: 1 / -1; }
+  label {
+    display: block;
+    font-size: 0.88rem;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .optional-tag {
+    font-weight: 400;
+    color: var(--muted);
+    font-size: 0.8rem;
+  }
+  input[type="text"],
+  input[type="date"],
+  input[type="time"],
+  textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 0.92rem;
+    font-family: inherit;
+    background: #fff;
+    color: var(--ink);
+  }
+  textarea {
+    min-height: 80px;
+    resize: vertical;
+  }
+  input:focus, textarea:focus {
+    outline: none;
+    border-color: var(--brand);
+    box-shadow: 0 0 0 3px rgba(179, 38, 30, 0.12);
+  }
+  .field-wrap { margin-bottom: 0; }
+  .eyewitness-note {
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin: -6px 0 14px;
+  }
+  button#submitBtn {
+    background: var(--brand);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 14px 20px;
+    font-size: 1.02rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+  button#submitBtn:hover { background: var(--brand-dark); }
+  button#submitBtn:disabled {
+    background: #c9a5a2;
+    cursor: not-allowed;
+  }
+  #status {
+    margin-top: 14px;
+    font-size: 0.9rem;
+    min-height: 20px;
+  }
+  #status.error { color: var(--brand); }
+  #status.success { color: #1e7a34; }
+  @media (max-width: 620px) {
+    .grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Singapore Civil Defence Force</h1>
+  <p>Fire Investigation Report — Generator</p>
+</header>
+
+<main>
+  <form id="reportForm" novalidate>
+
+    <fieldset>
+      <legend>Investigator Details</legend>
+      <div class="grid">
+        <div class="field-wrap">
+          <label for="investigator_name">Investigator Name *</label>
+          <input type="text" id="investigator_name" name="investigator_name" required>
+        </div>
+        <div class="field-wrap">
+          <label for="investigator_appointment">Investigator Appointment *</label>
+          <input type="text" id="investigator_appointment" name="investigator_appointment" required>
+        </div>
+        <div class="field-wrap full">
+          <label for="investigator_station">Investigator Station *</label>
+          <input type="text" id="investigator_station" name="investigator_station" required>
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>General Information</legend>
+      <div class="grid">
+        <div class="field-wrap">
+          <label for="incident_no">Incident No. *</label>
+          <input type="text" id="incident_no" name="incident_no" required>
+        </div>
+        <div class="field-wrap">
+          <label for="date_of_fire">Date of Fire *</label>
+          <input type="date" id="date_of_fire" name="date_of_fire" required>
+        </div>
+        <div class="field-wrap">
+          <label for="time_of_call">Time of Call *</label>
+          <input type="time" id="time_of_call" name="time_of_call" required>
+        </div>
+        <div class="field-wrap full">
+          <label for="address_of_fire">Address of Fire *</label>
+          <textarea id="address_of_fire" name="address_of_fire" required></textarea>
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Incident Information</legend>
+      <div class="grid">
+        <div class="field-wrap full">
+          <label for="fire_involved">Fire Involved *</label>
+          <textarea id="fire_involved" name="fire_involved" required></textarea>
+        </div>
+        <div class="field-wrap full">
+          <label for="method_of_extinguishment">Method of Extinguishment *</label>
+          <textarea id="method_of_extinguishment" name="method_of_extinguishment" required></textarea>
+        </div>
+        <div class="field-wrap full">
+          <label for="damages_sustained">Damages Sustained *</label>
+          <textarea id="damages_sustained" name="damages_sustained" required></textarea>
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Eyewitness Particulars <span class="optional-tag">(optional)</span></legend>
+      <p class="eyewitness-note">Leave blank if there is no eyewitness — the report will show "NIL" for these fields.</p>
+      <div class="grid">
+        <div class="field-wrap">
+          <label for="eyewitness_name">Name</label>
+          <input type="text" id="eyewitness_name" name="eyewitness_name">
+        </div>
+        <div class="field-wrap">
+          <label for="eyewitness_designation">Designation</label>
+          <input type="text" id="eyewitness_designation" name="eyewitness_designation">
+        </div>
+        <div class="field-wrap">
+          <label for="eyewitness_nric">NRIC / FIN No.</label>
+          <input type="text" id="eyewitness_nric" name="eyewitness_nric">
+        </div>
+        <div class="field-wrap">
+          <label for="eyewitness_nationality">Nationality</label>
+          <input type="text" id="eyewitness_nationality" name="eyewitness_nationality">
+        </div>
+        <div class="field-wrap full">
+          <label for="eyewitness_address">Address</label>
+          <input type="text" id="eyewitness_address" name="eyewitness_address">
+        </div>
+        <div class="field-wrap full">
+          <label for="eyewitness_contact">Contact No.</label>
+          <input type="text" id="eyewitness_contact" name="eyewitness_contact">
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Investigation &amp; Findings</legend>
+      <div class="grid">
+        <div class="field-wrap">
+          <label for="ignition_source">Ignition Source *</label>
+          <textarea id="ignition_source" name="ignition_source" required></textarea>
+        </div>
+        <div class="field-wrap">
+          <label for="ignition_fuels">Ignition Fuel(s) *</label>
+          <textarea id="ignition_fuels" name="ignition_fuels" required></textarea>
+        </div>
+        <div class="field-wrap full">
+          <label for="events_leading_to_incident">Events/Circumstances Leading to Incident *</label>
+          <textarea id="events_leading_to_incident" name="events_leading_to_incident" required></textarea>
+        </div>
+        <div class="field-wrap full">
+          <label for="burn_patterns_observed">Burn Pattern(s) Observed *</label>
+          <textarea id="burn_patterns_observed" name="burn_patterns_observed" required></textarea>
+        </div>
+        <div class="field-wrap full">
+          <label for="evidence_at_scene">Evidence at Scene *</label>
+          <textarea id="evidence_at_scene" name="evidence_at_scene" required></textarea>
+        </div>
+      </div>
+    </fieldset>
+
+    <div>
+      <button type="submit" id="submitBtn">Generate &amp; Download Report</button>
+      <div id="status"></div>
+    </div>
+
+  </form>
+</main>
+
+<script>
+const form = document.getElementById('reportForm');
+const statusEl = document.getElementById('status');
+const submitBtn = document.getElementById('submitBtn');
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  statusEl.textContent = '';
+  statusEl.className = '';
+
+  if (!form.checkValidity()) {
+    form.reportValidity();
+    return;
+  }
+
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Generating report…';
+
+  try {
+    const formData = new FormData(form);
+    const response = await fetch('/generate', {
+      method: 'POST',
+      body: formData
+    });
+
+    if (!response.ok) {
+      let message = 'Failed to generate report.';
+      try {
+        const data = await response.json();
+        if (data.fields) {
+          message = 'Please fill in: ' + data.fields.join(', ');
+        } else if (data.error) {
+          message = data.error;
+        }
+      } catch (_) {}
+      statusEl.textContent = message;
+      statusEl.className = 'error';
+      return;
+    }
+
+    const blob = await response.blob();
+    const disposition = response.headers.get('Content-Disposition') || '';
+    const match = disposition.match(/filename="?([^"]+)"?/);
+    const filename = match ? match[1] : 'Fire_Investigation_Report.docx';
+
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url);
+
+    statusEl.textContent = 'Report generated — download started.';
+    statusEl.className = 'success';
+  } catch (err) {
+    statusEl.textContent = 'Something went wrong: ' + err.message;
+    statusEl.className = 'error';
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Generate & Download Report';
+  }
+});
+</script>
+
+</body>
+</html>
