@@ -76,6 +76,24 @@
     color: var(--muted);
     font-size: 0.8rem;
   }
+  .field-label-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 6px;
+  }
+  .field-label-row label {
+    margin-bottom: 0;
+    flex-shrink: 0;
+  }
+  .field-hint {
+    font-size: 0.8rem;
+    font-weight: 400;
+    font-style: italic;
+    color: var(--muted);
+    text-align: right;
+  }
   input[type="text"],
   input[type="date"],
   input[type="time"],
@@ -129,6 +147,11 @@
   #status.success { color: #1e7a34; }
   @media (max-width: 620px) {
     .grid { grid-template-columns: 1fr; }
+    .field-label-row {
+      flex-direction: column;
+      gap: 2px;
+    }
+    .field-hint { text-align: left; }
   }
 </style>
 </head>
@@ -186,15 +209,24 @@
       <legend>Incident Information</legend>
       <div class="grid">
         <div class="field-wrap full">
-          <label for="fire_involved">Fire Involved *</label>
+          <div class="field-label-row">
+            <label for="fire_involved">Fire Involved *</label>
+            <span class="field-hint">e.g. "A green rubbish bin and its contents."</span>
+          </div>
           <textarea id="fire_involved" name="fire_involved" required></textarea>
         </div>
         <div class="field-wrap full">
-          <label for="method_of_extinguishment">Method of Extinguishment *</label>
+          <div class="field-label-row">
+            <label for="method_of_extinguishment">Method of Extinguishment *</label>
+            <span class="field-hint">e.g. "Fire was extinguished by SCDF using 1 x Hosereel."</span>
+          </div>
           <textarea id="method_of_extinguishment" name="method_of_extinguishment" required></textarea>
         </div>
         <div class="field-wrap full">
-          <label for="damages_sustained">Damages Sustained *</label>
+          <div class="field-label-row">
+            <label for="damages_sustained">Damages Sustained *</label>
+            <span class="field-hint">e.g. "Due to the fire, the bottom of the green bin had burn holes, the area around the fire had thermal warping of plastic, and the inside of the bin had soot damage. The other areas of the bin were left relatively undamaged."</span>
+          </div>
           <textarea id="damages_sustained" name="damages_sustained" required></textarea>
         </div>
       </div>
