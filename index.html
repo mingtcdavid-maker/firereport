@@ -257,6 +257,33 @@
       </div>
     </fieldset>
 
+    <fieldset>
+      <legend>Section 7: Other Information <span class="optional-tag">(optional)</span></legend>
+      <p class="eyewitness-note">Fill in whichever points apply. Each one filled in becomes a lettered point (a, b, c…) in the report; blank ones are skipped.</p>
+      <div class="grid">
+        <div class="field-wrap full">
+          <label for="other_info_classification">a) Fire Classification &amp; Suspected Origin</label>
+          <textarea id="other_info_classification" name="other_info_classification"></textarea>
+        </div>
+        <div class="field-wrap full">
+          <label for="other_info_evidence">b) Evidence Supporting Origin of Fire</label>
+          <textarea id="other_info_evidence" name="other_info_evidence"></textarea>
+        </div>
+        <div class="field-wrap full">
+          <label for="other_info_location">c) Location Details</label>
+          <textarea id="other_info_location" name="other_info_location"></textarea>
+        </div>
+        <div class="field-wrap full">
+          <label for="other_info_hypothesis">d) Hypothesis on Origin of Fire</label>
+          <textarea id="other_info_hypothesis" name="other_info_hypothesis"></textarea>
+        </div>
+        <div class="field-wrap full">
+          <label for="other_info_spf_tango_id">e) SPF Tango ID (if applicable)</label>
+          <textarea id="other_info_spf_tango_id" name="other_info_spf_tango_id"></textarea>
+        </div>
+      </div>
+    </fieldset>
+
     <div>
       <button type="submit" id="submitBtn">Generate &amp; Download Report</button>
       <div id="status"></div>
@@ -278,16 +305,36 @@ function clean(value) {
   return (value || '').trim();
 }
 
+function toTitleCase(value) {
+  return value.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+function buildOtherInformation(get) {
+  const points = [
+    ['a', get('other_info_classification')],
+    ['b', get('other_info_evidence')],
+    ['c', get('other_info_location')],
+    ['d', get('other_info_hypothesis')],
+    ['e', get('other_info_spf_tango_id')],
+  ];
+  return points
+    .filter(([, text]) => text)
+    .map(([letter, text]) => `${letter})${text}`)
+    .join('\n\n');
+}
+
 function buildContext(form) {
   const data = new FormData(form);
   const get = (name) => clean(data.get(name));
 
   const investigatorName = get('investigator_name');
+  const investigatorAppointment = get('investigator_appointment');
 
   return {
-    investigator_rank_and_name: investigatorName,
-    investigator_name: investigatorName,
-    investigator_appointment: get('investigator_appointment'),
+    investigator_name: toTitleCase(investigatorName),
+    investigator_appointment: toTitleCase(investigatorAppointment),
+    investigator_rank_and_name: investigatorName.toUpperCase(),
+    investigator_appointment_signature: investigatorAppointment.toUpperCase(),
     investigator_station: get('investigator_station'),
     incident_no: get('incident_no'),
     date_of_fire: get('date_of_fire'),
@@ -302,7 +349,7 @@ function buildContext(form) {
     burn_patterns_observed: get('burn_patterns_observed'),
     evidence_at_scene: get('evidence_at_scene'),
     insured_mark_no: '',
-    other_information: '',
+    other_information: buildOtherInformation(get),
     eyewitness_name: get('eyewitness_name') || 'NIL',
     eyewitness_designation: get('eyewitness_designation') || 'NIL',
     eyewitness_nric: get('eyewitness_nric') || 'NIL',
@@ -333,6 +380,7 @@ async function generateReport(context) {
   const zip = new PizZip(templateBuffer);
   const doc = new window.docxtemplater(zip, {
     delimiters: { start: '{{', end: '}}' },
+    linebreaks: true,
   });
 
   doc.render(context);
