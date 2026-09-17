@@ -278,16 +278,22 @@ function clean(value) {
   return (value || '').trim();
 }
 
+function toTitleCase(value) {
+  return value.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
 function buildContext(form) {
   const data = new FormData(form);
   const get = (name) => clean(data.get(name));
 
   const investigatorName = get('investigator_name');
+  const investigatorAppointment = get('investigator_appointment');
 
   return {
-    investigator_rank_and_name: investigatorName,
-    investigator_name: investigatorName,
-    investigator_appointment: get('investigator_appointment'),
+    investigator_name: toTitleCase(investigatorName),
+    investigator_appointment: toTitleCase(investigatorAppointment),
+    investigator_rank_and_name: investigatorName.toUpperCase(),
+    investigator_appointment_signature: investigatorAppointment.toUpperCase(),
     investigator_station: get('investigator_station'),
     incident_no: get('incident_no'),
     date_of_fire: get('date_of_fire'),
