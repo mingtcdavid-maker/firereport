@@ -265,10 +265,83 @@
   </form>
 </main>
 
+<script src="static/vendor/pizzip.min.js"></script>
+<script src="static/vendor/docxtemplater.min.js"></script>
 <script>
+const TEMPLATE_URL = 'docx_template/SCDF_Fire_Investigation_Report_TEMPLATE.docx';
+
 const form = document.getElementById('reportForm');
 const statusEl = document.getElementById('status');
 const submitBtn = document.getElementById('submitBtn');
+
+function clean(value) {
+  return (value || '').trim();
+}
+
+function buildContext(form) {
+  const data = new FormData(form);
+  const get = (name) => clean(data.get(name));
+
+  const investigatorName = get('investigator_name');
+
+  return {
+    investigator_rank_and_name: investigatorName,
+    investigator_name: investigatorName,
+    investigator_appointment: get('investigator_appointment'),
+    investigator_station: get('investigator_station'),
+    incident_no: get('incident_no'),
+    date_of_fire: get('date_of_fire'),
+    time_of_call: get('time_of_call'),
+    address_of_fire: get('address_of_fire'),
+    fire_involved: get('fire_involved'),
+    method_of_extinguishment: get('method_of_extinguishment'),
+    damages_sustained: get('damages_sustained'),
+    ignition_source: get('ignition_source'),
+    ignition_fuels: get('ignition_fuels'),
+    events_leading_to_incident: get('events_leading_to_incident'),
+    burn_patterns_observed: get('burn_patterns_observed'),
+    evidence_at_scene: get('evidence_at_scene'),
+    insured_mark_no: '',
+    other_information: '',
+    eyewitness_name: get('eyewitness_name') || 'NIL',
+    eyewitness_designation: get('eyewitness_designation') || 'NIL',
+    eyewitness_nric: get('eyewitness_nric') || 'NIL',
+    eyewitness_nationality: get('eyewitness_nationality') || 'NIL',
+    eyewitness_address: get('eyewitness_address') || 'NIL',
+    eyewitness_contact: get('eyewitness_contact') || 'NIL',
+  };
+}
+
+function safeFilename(incidentNo) {
+  let name = (incidentNo || '').trim().replace(/[^A-Za-z0-9_-]+/g, '_');
+  if (!name) {
+    const now = new Date();
+    const pad = (n) => String(n).padStart(2, '0');
+    name = `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}_` +
+      `${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
+  }
+  return `Fire_Investigation_Report_${name}.docx`;
+}
+
+async function generateReport(context) {
+  const response = await fetch(TEMPLATE_URL);
+  if (!response.ok) {
+    throw new Error('Report template not found.');
+  }
+  const templateBuffer = await response.arrayBuffer();
+
+  const zip = new PizZip(templateBuffer);
+  const doc = new window.docxtemplater(zip, {
+    delimiters: { start: '{{', end: '}}' },
+  });
+
+  doc.render(context);
+
+  return doc.getZip().generate({
+    type: 'blob',
+    mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  });
+}
 
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -284,31 +357,9 @@ form.addEventListener('submit', async (e) => {
   submitBtn.textContent = 'Generating report…';
 
   try {
-    const formData = new FormData(form);
-    const response = await fetch('/generate', {
-      method: 'POST',
-      body: formData
-    });
-
-    if (!response.ok) {
-      let message = 'Failed to generate report.';
-      try {
-        const data = await response.json();
-        if (data.fields) {
-          message = 'Please fill in: ' + data.fields.join(', ');
-        } else if (data.error) {
-          message = data.error;
-        }
-      } catch (_) {}
-      statusEl.textContent = message;
-      statusEl.className = 'error';
-      return;
-    }
-
-    const blob = await response.blob();
-    const disposition = response.headers.get('Content-Disposition') || '';
-    const match = disposition.match(/filename="?([^"]+)"?/);
-    const filename = match ? match[1] : 'Fire_Investigation_Report.docx';
+    const context = buildContext(form);
+    const blob = await generateReport(context);
+    const filename = safeFilename(context.incident_no);
 
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
